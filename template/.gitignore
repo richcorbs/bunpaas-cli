@@ -1,0 +1,5 @@
+dist/
+node_modules/
+.richhost
+.DS_Store
+*.tar.gz
