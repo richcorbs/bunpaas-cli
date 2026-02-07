@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: bun-darwin-arm64
+            name: bunpaas-cli-macos-arm64
+          - target: bun-darwin-x64
+            name: bunpaas-cli-macos-x64
+          - target: bun-linux-x64
+            name: bunpaas-cli-linux-x64
+          - target: bun-linux-arm64
+            name: bunpaas-cli-linux-arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun build --compile --target=${{ matrix.target }} cli.js --outfile ${{ matrix.name }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - run: chmod +x bunpaas-cli-*
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: bunpaas-cli-*
