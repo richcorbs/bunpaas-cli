@@ -2,6 +2,20 @@
   "name": "bunpaas-cli",
   "version": "0.1.0",
   "type": "module",
+  "scripts": {
+    "compile": "bun build --compile cli.js --outfile bunpaas-cli",
+    "install-local": "bun run compile && mv bunpaas-cli ~/.local/bin/bunpaas-cli",
+    "release:patch": "npm version patch && git push origin main --tags",
+    "release:minor": "npm version minor && git push origin main --tags",
+    "release:major": "npm version major && git push origin main --tags"
+  },
+  "scripts-info": {
+    "compile": "Build a standalone binary in the current directory",
+    "install-local": "Compile and install to ~/.local/bin",
+    "release:patch": "Bump patch version (0.1.0 → 0.1.1), tag, and push to trigger GitHub release",
+    "release:minor": "Bump minor version (0.1.0 → 0.2.0), tag, and push to trigger GitHub release",
+    "release:major": "Bump major version (0.1.0 → 1.0.0), tag, and push to trigger GitHub release"
+  },
   "dependencies": {
     "gray-matter": "^4.0.3",
     "marked": "^9.1.0"
