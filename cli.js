@@ -31,7 +31,7 @@ function showHelp() {
   console.log("  build              Build the site");
   console.log("  dev                Start dev server with live reload");
   console.log("  deploy [env]       Deploy to PaaS (production/staging/development)");
-  console.log("  init               Initialize project with site.json and .richhost");
+  console.log("  init               Initialize project with site.json and .bunpaas");
   process.exit(1);
 }
 
@@ -481,7 +481,7 @@ async function uploadTarball(endpoint, host, deployKey, tarballPath) {
 async function deploy(envArg) {
   const startTime = performance.now();
   const siteJsonPath = path.join(PROJECT_DIR, "site.json");
-  const richhostPath = path.join(PROJECT_DIR, ".richhost");
+  const bunpaasPath = path.join(PROJECT_DIR, ".bunpaas");
 
   let siteConfig = await readJsonFile(siteJsonPath);
   if (!siteConfig) {
@@ -489,7 +489,7 @@ async function deploy(envArg) {
     process.exit(1);
   }
 
-  let richhost = await readJsonFile(richhostPath) || {};
+  let bunpaas = await readJsonFile(bunpaasPath) || {};
 
   const environments = siteConfig.environments || {};
   const envNames = Object.keys(environments);
@@ -525,22 +525,22 @@ async function deploy(envArg) {
     process.exit(1);
   }
 
-  let deployKey = richhost.deployKey;
+  let deployKey = bunpaas.deployKey;
   if (!deployKey) {
     deployKey = await prompt("Enter deploy key: ");
-    richhost.deployKey = deployKey;
-    await writeJsonFile(richhostPath, richhost);
-    console.log("Saved deploy key to .richhost\n");
+    bunpaas.deployKey = deployKey;
+    await writeJsonFile(bunpaasPath, bunpaas);
+    console.log("Saved deploy key to .bunpaas\n");
   }
 
-  const platformEndpoints = richhost.platformEndpoints || {};
+  const platformEndpoints = bunpaas.platformEndpoints || {};
   let endpoint = platformEndpoints[env] || platformEndpoints.production;
   if (!endpoint) {
-    endpoint = await prompt("Enter platform endpoint (e.g., https://paas-admin.example.com): ");
-    if (!richhost.platformEndpoints) richhost.platformEndpoints = {};
-    richhost.platformEndpoints[env] = endpoint;
-    await writeJsonFile(richhostPath, richhost);
-    console.log("Saved platform endpoint to .richhost\n");
+    endpoint = await prompt("Enter platform endpoint (e.g., https://bunpaas-admin.example.com): ");
+    if (!bunpaas.platformEndpoints) bunpaas.platformEndpoints = {};
+    bunpaas.platformEndpoints[env] = endpoint;
+    await writeJsonFile(bunpaasPath, bunpaas);
+    console.log("Saved platform endpoint to .bunpaas\n");
   }
 
   console.log(`\nDeploying to ${targetHost} (${env})...\n`);
@@ -589,7 +589,7 @@ async function downloadTemplate() {
 
 async function initProject() {
   const siteJsonPath = path.join(PROJECT_DIR, "site.json");
-  const richhostPath = path.join(PROJECT_DIR, ".richhost");
+  const bunpaasPath = path.join(PROJECT_DIR, ".bunpaas");
 
   if (await dirExists(path.join(PROJECT_DIR, "src"))) {
     console.log("Project already has a src/ directory. Skipping template download.");
@@ -610,24 +610,24 @@ async function initProject() {
     console.log("Created site.json");
   }
 
-  const richhostExists = await readJsonFile(richhostPath);
-  if (!richhostExists) {
+  const bunpaasExists = await readJsonFile(bunpaasPath);
+  if (!bunpaasExists) {
     const deployKey = await prompt("Deploy key (leave blank to set later): ");
-    const platformEndpoint = await prompt("Platform endpoint (e.g., https://paas-admin.example.com): ");
+    const platformEndpoint = await prompt("Platform endpoint (e.g., https://bunpaas-admin.example.com): ");
 
-    const richhost = {
+    const bunpaas = {
       deployKey: deployKey || "",
       platformEndpoints: {
         production: platformEndpoint || "",
-        development: "http://paas-admin.localhost:7001",
+        development: "http://bunpaas-admin.localhost:7001",
       },
     };
-    await writeJsonFile(richhostPath, richhost);
-    console.log("Created .richhost");
+    await writeJsonFile(bunpaasPath, bunpaas);
+    console.log("Created .bunpaas");
   }
 
   console.log("\n✓ Project initialized!");
   console.log("\nNext steps:");
-  console.log("  1. Set your deploy key in .richhost (get it from the admin UI)");
+  console.log("  1. Set your deploy key in .bunpaas (get it from the admin UI)");
   console.log("  2. Run: bunpaas-cli dev");
 }
