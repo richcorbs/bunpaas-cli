@@ -1,6 +1,6 @@
 {
   "name": "bunpaas-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "compile": "bun build --compile cli.js --outfile bunpaas-cli",
