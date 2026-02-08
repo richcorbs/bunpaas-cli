@@ -525,10 +525,12 @@ async function deploy(envArg) {
     process.exit(1);
   }
 
-  let deployKey = bunpaas.deployKey;
+  const deployKeys = bunpaas.deployKeys || {};
+  let deployKey = deployKeys[env] || bunpaas.deployKey;
   if (!deployKey) {
-    deployKey = await prompt("Enter deploy key: ");
-    bunpaas.deployKey = deployKey;
+    deployKey = await prompt(`Enter deploy key for ${env}: `);
+    if (!bunpaas.deployKeys) bunpaas.deployKeys = {};
+    bunpaas.deployKeys[env] = deployKey;
     await writeJsonFile(bunpaasPath, bunpaas);
     console.log("Saved deploy key to .bunpaas\n");
   }
@@ -616,7 +618,10 @@ async function initProject() {
     const platformEndpoint = await prompt("Platform endpoint (e.g., https://bunpaas-admin.example.com): ");
 
     const bunpaas = {
-      deployKey: deployKey || "",
+      deployKeys: {
+        production: deployKey || "",
+        development: deployKey || "",
+      },
       platformEndpoints: {
         production: platformEndpoint || "",
         development: "http://bunpaas-admin.localhost:7001",
@@ -628,6 +633,6 @@ async function initProject() {
 
   console.log("\n✓ Project initialized!");
   console.log("\nNext steps:");
-  console.log("  1. Set your deploy key in .bunpaas (get it from the admin UI)");
+  console.log("  1. Set your deploy keys in .bunpaas (get them from the admin UI)");
   console.log("  2. Run: bunpaas-cli dev");
 }
