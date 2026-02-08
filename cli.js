@@ -171,8 +171,7 @@ async function renderPage(rawContent, frontmatter, isMarkdown = true, injectLive
 }
 
 function outputPathForPage(filename) {
-  const name = filename.replace(/\.(md|html)$/, "");
-  return name === "index" ? "index.html" : path.join(name, "index.html");
+  return filename.replace(/\.md$/, ".html");
 }
 
 /* ---------------------------

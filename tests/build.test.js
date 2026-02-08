@@ -57,13 +57,13 @@ describe("Build", () => {
   });
 
   test("renders markdown to HTML", async () => {
-    const content = await fs.readFile(path.join(DIST, "about", "index.html"), "utf8");
+    const content = await fs.readFile(path.join(DIST, "about.html"), "utf8");
     expect(content).toContain("<h1>About</h1>");
     expect(content).toContain("<strong>bold</strong>");
   });
 
   test("applies layout to markdown", async () => {
-    const content = await fs.readFile(path.join(DIST, "about", "index.html"), "utf8");
+    const content = await fs.readFile(path.join(DIST, "about.html"), "utf8");
     expect(content).toContain("<html><body>");
     expect(content).toContain("</body></html>");
   });
