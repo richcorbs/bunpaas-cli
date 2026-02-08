@@ -1,7 +1,6 @@
 import path from "path";
 import { watch } from "fs";
 import { stat, readdir, mkdir as mkdirFs, rm as rmFs, unlink } from "fs/promises";
-import { marked } from "marked";
 import matter from "gray-matter";
 
 const PROJECT_DIR = process.cwd();
@@ -153,7 +152,7 @@ function applyTemplates(html, data) {
 }
 
 async function renderPage(rawContent, frontmatter, isMarkdown = true, injectLiveReload = false) {
-  const htmlBody = isMarkdown ? marked.parse(rawContent) : rawContent;
+  const htmlBody = isMarkdown ? Bun.markdown.html(rawContent) : rawContent;
   const layoutName = frontmatter.layout || "default";
   const layoutHtml = templateCache[`layouts/${layoutName}`];
 
