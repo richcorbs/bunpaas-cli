@@ -572,15 +572,7 @@ async function dev() {
         });
       }
 
-      // Try function handlers (skip if path has a file extension or is root)
-      const hasExtension = /\.[a-zA-Z0-9]+$/.test(url.pathname);
-      const isRoot = url.pathname === "/" || url.pathname === "";
-      if (!hasExtension && !isRoot) {
-        const functionResponse = await handleFunction(req, url);
-        if (functionResponse) return functionResponse;
-      }
-
-      // Serve static files from dist
+      // Try static files first
       let filePath = path.join(DIST, url.pathname);
 
       // Try exact path
@@ -606,6 +598,10 @@ async function dev() {
       if (await file.exists()) {
         return new Response(file);
       }
+
+      // Try function handlers as fallback
+      const functionResponse = await handleFunction(req, url);
+      if (functionResponse) return functionResponse;
 
       return new Response("Not Found", { status: 404 });
     },
