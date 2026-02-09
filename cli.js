@@ -402,7 +402,20 @@ function injectReloadScript(html) {
 function triggerReload() {
   console.log(`⟳ Reloading ${reloadClients.length} client(s)...`);
   reloadClients.forEach((controller) => {
-    controller.enqueue(`event: reload\ndata: ${Date.now()}\n\n`);
+    try {
+      controller.enqueue(`event: reload\ndata: ${Date.now()}\n\n`);
+    } catch (err) {
+      // Controller closed, will be cleaned up on next connection
+    }
+  });
+  // Clean up closed controllers
+  reloadClients = reloadClients.filter((c) => {
+    try {
+      c.desiredSize; // Check if controller is still valid
+      return true;
+    } catch {
+      return false;
+    }
   });
 }
 
@@ -559,8 +572,8 @@ async function dev() {
             reloadClients.push(controller);
             controller.enqueue("retry: 1000\n\n");
           },
-          cancel() {
-            reloadClients = reloadClients.filter((c) => c !== this);
+          cancel(controller) {
+            reloadClients = reloadClients.filter((c) => c !== controller);
           },
         });
         return new Response(stream, {
