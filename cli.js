@@ -12,6 +12,61 @@ const DIST = path.join(PROJECT_DIR, "dist");
 const PORT = 8000;
 
 /* ---------------------------
+   Real-time Channels (SSE)
+   --------------------------- */
+
+const sseChannels = new Map();
+
+function sseSubscribe(channel) {
+  let ctrl;
+  const stream = new ReadableStream({
+    start(controller) {
+      ctrl = controller;
+      if (!sseChannels.has(channel)) {
+        sseChannels.set(channel, new Set());
+      }
+      sseChannels.get(channel).add(controller);
+      controller.enqueue("retry: 1000\n\n");
+    },
+    cancel() {
+      const subs = sseChannels.get(channel);
+      if (subs) {
+        subs.delete(ctrl);
+        if (subs.size === 0) sseChannels.delete(channel);
+      }
+    },
+  });
+
+  return {
+    status: 200,
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    },
+    body: stream,
+  };
+}
+
+function ssePublish(channel, data) {
+  const subs = sseChannels.get(channel);
+  if (!subs || subs.size === 0) return;
+
+  const payload = typeof data === "object" ? JSON.stringify(data) : String(data);
+  const message = `data: ${payload}\n\n`;
+
+  for (const controller of subs) {
+    try {
+      controller.enqueue(message);
+    } catch {
+      subs.delete(controller);
+    }
+  }
+
+  if (subs.size === 0) sseChannels.delete(channel);
+}
+
+/* ---------------------------
    _functions Support
    --------------------------- */
 
@@ -80,6 +135,8 @@ async function handleFunction(req, url) {
     body,
     params: functionFile.params,
     env: process.env,
+    subscribe: (channel) => sseSubscribe(channel),
+    publish: (channel, data) => ssePublish(channel, data),
   };
 
   // Execute function
