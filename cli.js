@@ -2,7 +2,9 @@ import path from "path";
 import { watch } from "fs";
 import { stat, readdir, mkdir as mkdirFs, rm as rmFs, unlink } from "fs/promises";
 import matter from "gray-matter";
+import pkg from "./package.json";
 
+const VERSION = pkg.version;
 const PROJECT_DIR = process.cwd();
 const SRC = path.join(PROJECT_DIR, "src");
 const PAGES = path.join(SRC, "pages");
@@ -289,16 +291,24 @@ const commands = {
   dev: () => dev(),
   deploy: () => deploy(args[1]),
   init: () => initProject(),
+  version: () => { console.log(`bunpaas-cli v${VERSION}`); return Promise.resolve(); },
 };
 
 function showHelp() {
-  console.log("Usage: bunpaas-cli <build|dev|deploy|init>");
+  console.log(`bunpaas-cli v${VERSION}`);
+  console.log("\nUsage: bunpaas-cli <command>");
   console.log("\nCommands:");
   console.log("  build              Build the site");
   console.log("  dev                Start dev server with live reload");
   console.log("  deploy [env]       Deploy to PaaS (production/staging/development)");
   console.log("  init               Initialize project with site.json and .bunpaas");
+  console.log("  version            Show version");
   process.exit(1);
+}
+
+if (command === "--version" || command === "-v") {
+  console.log(`bunpaas-cli v${VERSION}`);
+  process.exit(0);
 }
 
 const run = commands[command];
