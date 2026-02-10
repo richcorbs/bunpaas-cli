@@ -9,7 +9,7 @@ const PAGES = path.join(SRC, "pages");
 const LAYOUTS = path.join(SRC, "layouts");
 const PARTIALS = path.join(SRC, "partials");
 const DIST = path.join(PROJECT_DIR, "dist");
-const PORT = 8000;
+const PORT = parseInt(process.env.PORT || "8000");
 
 /* ---------------------------
    Real-time Channels (SSE)
